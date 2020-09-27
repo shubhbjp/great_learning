@@ -1,0 +1,11 @@
+<center>
+	<%= form_tag game_start_computer_game_path, { :method => :get } do %>
+		<%= submit_tag "Play with Computer", id: "play_with_computer", class: "btn btn-primary" %>
+	<%end%>
+	<%= form_tag game_start_computer_game_path, { :method => :get } do %>
+		<%= submit_tag "Play with Friend", id: "play_with_friend", class: "btn btn-primary" %>
+	<%end%>	
+	<%= form_tag game_start_game_path, { :method => :get } do %>
+		<%= submit_tag "Play Randomly", id: "play_random", class: "btn btn-primary" %>
+	<%end%>
+</center>

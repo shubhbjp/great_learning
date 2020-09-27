@@ -1,0 +1,202 @@
+<%if @player_a_cards.present? && @player_b_cards.present?%>
+<div class="container">
+  <div class="split left" id="played-moves">
+  </div>
+  <div class="split right">
+    <%= link_to "Click For New Game", root_path%>
+    <div>
+      <h1> Player A cards</h1>
+      <%@player_a_cards.each do |card|%>
+        <div type="a" id="card-<%=card%>" class="display-card" onclick="selectCard(this)"> <%=@all_cards[card]%> </div>
+      <%end%>
+      <input type="button" class="pass" value="Pass">
+    </div>
+    <div>
+      <h1> Player B cards</h1>
+      <%@player_b_cards.each do |card|%>
+        <div type="b" id="card-<%=card%>" class="display-card" onclick="selectCard(this)"> <%=@all_cards[card]%> </div>
+      <%end%>
+      <input type="button" class="pass" value="Pass">
+    </div>
+  </div>
+</div>
+<%else%>
+  Please restart the game
+<%end%>
+
+<style>
+  .display-card{
+    border: 1px solid black;
+    width: 70px;
+    overflow-wrap: break-word;
+    display: inline-grid;
+    height: 80px;
+    position: relative;
+    padding: 10px 5px 10px 5px;
+    margin: 2px;
+    text-align: center;
+  }
+  .split {
+    height: 100%;
+    width: 80%;
+    position: fixed;
+    z-index: 1;
+    top: 0;
+    overflow-x: hidden;
+    padding-top: 20px;
+  }
+  .left {
+    left: 0;
+    background-color: green;
+  }
+
+  /* Control the right side */
+  .right {
+    right: 0;
+    background-color: darkseagreen;
+  }
+  .selected-list{
+    border: 1px solid black;
+    width: 70px;
+    height: 30px;
+    padding: 8px;
+    margin: 10px;
+    display: inline-flex;
+  }
+  .pass{
+    margin:10px;
+    padding: 10px 20px 10px 20px;
+  }
+</style>
+<script>
+  window.onload = function(e){
+    console.log("New Game Started");
+    player_a_selected_cards = []
+    player_b_selected_cards = []
+    player_chance = 'a'
+    allCards = <%=raw @all_cards.to_json%>
+    winnerDeclared = false
+  }
+  function invalidCard(){
+    if(player_a_selected_cards.length == 0) {
+      return false
+    } else if(player_chance == 'b'){
+      var lastCard = allCards[player_a_selected_cards[player_a_selected_cards.length-1]]
+      var currCard = allCards[Number(id.split("-")[1])]
+      var lastCardArr = lastCard.split(" ")
+      var currCardArr = currCard.split(" ")
+      return ((lastCardArr[0] == currCardArr[0]) || (lastCardArr[1] == currCardArr[1])) ? false : true
+    } else {
+      var lastCard = allCards[player_b_selected_cards[player_b_selected_cards.length-1]]
+      var currCard = allCards[Number(id.split("-")[1])]
+      var lastCardArr = lastCard.split(" ")
+      var currCardArr = currCard.split(" ")
+      return ((lastCardArr[0] == currCardArr[0]) || (lastCardArr[1] == currCardArr[1])) ? false : true
+    }
+  }
+
+  function selectCard(self){
+    id = self.id
+    type = self.getAttribute('type')
+    if(winnerDeclared){
+      getWinner()
+      return
+    } else if(invalidCard()) {
+      alert("Please select same type of card or same  number of card")
+      return
+    }
+    if (type==player_chance) {
+      if(player_chance == 'a') {
+        player_a_selected_cards.push(Number(id.split("-")[1]))
+        player_chance = 'b'
+      } else {
+        player_b_selected_cards.push(Number(id.split("-")[1]))
+        player_chance = 'a'
+      }
+      self.style.display = 'none'
+      showBothPlayerCards(self)
+    } else {
+      alert("Player " + player_chance.toUpperCase() + " Chance")
+    }
+  }
+
+  function showBothPlayerCards(currCard=null){
+    var ele = document.createElement("div")
+    ele.className = "selected-list"
+    ele.innerHTML = currCard ? currCard.innerHTML : "Pass"
+    var playedMoves = document.getElementById('played-moves')
+    playedMoves.appendChild(ele)
+    if( (playedMoves.getElementsByTagName("div").length%2) == 0){
+      playedMoves.innerHTML += "<br />"
+    }
+    getWinner()
+  }
+
+  function checkWinner(playerCards){
+    i=1
+    count = 1
+    if(!playerCards[0]){
+      return
+    }
+    prev = Number(allCards[playerCards[0]].split(" ")[1])
+    debugger
+    while(i<playerCards.length){
+      next = Number(allCards[playerCards[i]].split(" ")[1])
+      if(prev < next) {
+        prev = next
+        count ++
+      } else {
+        count = 0
+      }
+      i++
+    }
+    return (count >= 4) ? true : false
+  }
+
+  function getWinner(){
+    winnerA = checkWinner(player_a_selected_cards)
+    if(winnerA) {
+      winnerDeclared = true
+      alert ("Player A won")
+    } else {
+      winnerB = checkWinner(player_b_selected_cards)
+      if(winnerB) {
+        winnerDeclared = true
+        alert("Player B won")
+      }
+    }
+  }
+
+  document.getElementsByClassName('pass')[0].onclick = function(){
+    if(winnerDeclared){
+      getWinner()
+      return
+    }
+    if(player_chance == 'a') {
+      if(player_a_selected_cards.length == 0) {
+        alert("Cant Pass this chance")
+      } else {
+        player_chance = 'b'
+        showBothPlayerCards()
+      }      
+    } else {
+      alert("Player " + player_chance.toUpperCase() + " Chance")
+    }     
+  }
+  document.getElementsByClassName('pass')[1].onclick = function(){
+    if(winnerDeclared){
+      getWinner()
+      return
+    }
+    if(player_chance == 'b') {
+      if(player_b_selected_cards.length == 0) {
+        alert("Cant Pass this chance")
+      } else {
+        player_chance = 'a'
+        showBothPlayerCards()
+      }
+    } else {
+      alert("Player " + player_chance.toUpperCase() + " Chance")
+    }
+  }
+</script>
